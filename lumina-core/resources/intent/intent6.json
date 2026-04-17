@@ -15,7 +15,7 @@
                 0.5,
                 1.5
             ],
-            "wind_direction": 90,
+            "wind_direction": 180,
             "wind_strength": 1.0
         }
     }

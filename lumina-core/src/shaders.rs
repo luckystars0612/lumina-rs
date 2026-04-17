@@ -164,8 +164,8 @@ fn main(@builtin(global_invocation_id) global_id: vec3u) {
             let speed = mix(params.velocity_min, params.velocity_max, p.seed.x);
             
             // DIRECT velocity - no curl noise interference
-            p.velocity.x = base_flow.x * speed * 0.5;
-            p.velocity.y = base_flow.y * speed * 0.5;
+            p.velocity.x = base_flow.x * speed * 80.0;
+            p.velocity.y = base_flow.y * speed * 80.0;
             
             // Move particles
             p.position.x = p.position.x + p.velocity.x * params.delta_time;
@@ -803,7 +803,6 @@ pub struct SimParams {
     pub buoyancy_force: f32,
     pub _pad0: f32,  // padding for vec4 alignment
     pub _pad1: f32,
-    pub _pad2: f32,
     pub base_color: [f32; 4],
     // Rain-specific parameters
     pub wind_direction: f32,
@@ -817,6 +816,7 @@ pub struct SimParams {
     pub splash_velocity: f32,
     pub _pad3: f32,  // padding to make size 128 bytes (16-byte alignment)
     pub _pad4: f32,
+    pub _pad5: f32,
 }
 
 #[repr(C)]
@@ -856,7 +856,6 @@ impl Default for SimParams {
             buoyancy_force: 0.0,
             _pad0: 0.0,
             _pad1: 0.0,
-            _pad2: 0.0,
             base_color: [1.0, 1.0, 1.0, 1.0],
             wind_direction: 0.0,
             wind_strength: 0.3,
@@ -869,6 +868,7 @@ impl Default for SimParams {
             splash_velocity: 2.0,
             _pad3: 0.0,
             _pad4: 0.0,
+            _pad5: 0.0,
         }
     }
 }

@@ -549,7 +549,6 @@ pub async fn render_loop(
         buoyancy_force: 0.0,
         _pad0: 0.0,
         _pad1: 0.0,
-        _pad2: 0.0,
         base_color: hex_to_rgba(&params.base_color_hex),
         // Rain-specific parameters
         wind_direction: params.wind_direction,
@@ -563,6 +562,7 @@ pub async fn render_loop(
         splash_velocity: params.splash_velocity,
         _pad3: 0.0,
         _pad4: 0.0,
+        _pad5: 0.0,
     };
 
     let render_params = RenderParams {

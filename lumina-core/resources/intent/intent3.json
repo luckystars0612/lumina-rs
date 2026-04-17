@@ -1,0 +1,21 @@
+{
+    "overlay_config": {
+        "preset": "embers",
+        "params": {
+            "density_multiplier": 1.0,
+            "velocity_scale": [
+                3.0,
+                6.0
+            ],
+            "base_color_hex": "#ff4400",
+            "turbulence": 0.6,
+            "flicker_speed": 3.0,
+            "size_range": [
+                1.0,
+                2.5
+            ],
+            "sway_intensity": 0.8,
+            "interaction_logic": "Ember sparks burst up from bottom like throwing rock into fire. Fast initial burst, then drift with wind. Particles glow orange, small and spark-like. Lifecycle: burst up -> slow drift -> fade out."
+        }
+    }
+}

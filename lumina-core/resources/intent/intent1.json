@@ -1,0 +1,29 @@
+{
+    "overlay_config": {
+        "preset": "rain",
+        "params": {
+            "density_multiplier": 0.2,
+            "velocity_scale": [
+                8.0,
+                12.0
+            ],
+            "base_color_hex": "#aaccff",
+            "turbulence": 0.3,
+            "flicker_speed": 0.0,
+            "size_range": [
+                1.0,
+                2.0
+            ],
+            "interaction_logic": "Light drizzle with strong diagonal wind. Fine rain streaks carried by powerful gusts. Wind-driven atmosphere.",
+            "rain_type": "normal",
+            "wind_direction": 35.0,
+            "wind_strength": 1.8,
+            "gust_enabled": true,
+            "gust_frequency": 0.15,
+            "gust_strength": 3.0,
+            "gust_duration": 1.2,
+            "splash_enabled": false,
+            "splash_velocity": 2.0
+        }
+    }
+}

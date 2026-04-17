@@ -1,0 +1,22 @@
+{
+    "overlay_config": {
+        "preset": "cosmic_dust",
+        "params": {
+            "density_multiplier": 2.5,
+            "velocity_scale": [
+                1.0,
+                2.0
+            ],
+            "base_color_hex": "#9b59ff",
+            "secondary_color_hex": "#ff4757",
+            "turbulence": 0.5,
+            "flicker_speed": 0.3,
+            "size_range": [
+                0.5,
+                1.5
+            ],
+            "wind_direction": 90,
+            "wind_strength": 1.0
+        }
+    }
+}

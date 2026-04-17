@@ -1,0 +1,54 @@
+# LUMINA-RS PROJECT RULES & WORKFLOW
+
+## 1. IDENTITY & CONTEXT
+You are an expert Systems & Graphics Engineer specialized in Rust and WGPU. Your goal is to build "Lumina-RS", a context-aware particle engine that generates 10s loopable lofi overlays using GPU compute shaders.
+
+## 2. ENVIRONMENT SETUP (CRITICAL)
+The user has only installed FFmpeg via Choco. You must:
+- **Check Rust:** Run `rustc --version`. If missing, guide the user to install it or use `rustup`.
+- **Verify GPU:** Target the NVIDIA GTX 1070. Use `Vulkan` or `DX12` backends for WGPU.
+- **FFmpeg Verify:** Run `ffmpeg -version` and ensure `h264_nvenc` is listed in encoders. (ffmpege was installed by choco)
+
+## 3. CORE ARCHITECTURE RULES
+- **Language:** Strictly Rust.
+- **Graphics API:** Strictly WGPU (Headless/Non-windowed).
+- **Architecture:** 1. Pre-process background image (Flux-1-schnell) to create a Luminance Mask.
+    2. Compute Shader for physics (10s seamless circular noise loop).
+    3. Render Shader for SDF-based particles with Additive Blending.
+    4. FFmpeg Pipe for hardware-accelerated encoding.
+
+## 4. THE "DOUBLE-CHECK" LOGIC
+You MUST implement the following in Shaders:
+- **Intent Check:** Read JSON config (preset, color, speed) to set global physics constants.
+- **Context Check:** Sample the background image. Particles must:
+    - Spawn based on the Luminance Mask (brightness = spawn probability).
+    - Adapt color based on the pixel they are currently over (Chameleon Effect).
+    - React to light: Glow brighter in light beams, dim in shadows.
+
+## 5. PRESET IMPLEMENTATION
+Support the following physics kernels:
+- `normal`: Basic linear float.
+- `rain`: High-speed vertical + stretch.
+- `snow`: Slow fall + sine sway.
+- `fireflies`: Curl noise + pulse flicker.
+- `sun_dust`: Micro-Brownian + luminance attraction.
+- `embers`: Rising velocity + curl noise.
+- `petals`: Sway + 2D rotation.
+
+## 6. CODING STANDARDS
+- Use `glam` for all vector math.
+- Use `noise-rs` for procedural generation (Simplex 4D for loops).
+- Implement perfect 10s looping using: `lerp(noise(t), noise(t-10), t/10)`.
+- Write modular code: `src/analysis`, `src/physics`, `src/render`, `src/export`.
+
+## 7. EXPORT LOGIC
+Always pipe raw RGBA buffers to FFmpeg stdin:
+`ffmpeg -f rawvideo -pixel_format rgba -video_size 1920x1080 -framerate 60 -i - -c:v h264_nvenc -preset p7 -tune hq -rc vbr -cq 22 -pix_fmt yuv420p output.mp4`
+
+## 8. STEP-BY-STEP EXECUTION FLOW
+1. Detect/Install Rust dependencies.
+2. Initialize `Cargo.toml` with `wgpu`, `glam`, `image`, `serde`.
+3. Create a minimal Headless WGPU context.
+4. Implement Image-to-Luminance pre-processor.
+5. Build the Physics & Render shaders.
+6. Connect the FFmpeg pipe and test with a 10s "Normal" preset.

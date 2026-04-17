@@ -1,0 +1,22 @@
+{
+    "overlay_config": {
+        "preset": "fireflies",
+        "params": {
+            "density_multiplier": 0.005,
+            "velocity_scale": [
+                0.2,
+                0.5
+            ],
+            "base_color_hex": "#cddc39",
+            "opacity": 0.9,
+            "turbulence": 0.8,
+            "flicker_speed": 0.5,
+            "size_range": [
+                3.0,
+                6.0
+            ],
+            "depth_layering": 0.8,
+            "director_note": "STRICT_CHECK: Implement 4D Simplex-based Curl Noise physics for organic, non-linear movement. Particles should swirl, not random jitter. Apply `p.flicker_offset = sin(time * flicker_speed + p.id) * 0.5 + 0.5`. Use Luminance Map to attract particles to the 'glowing moss' areas (Y-axis spawn bias > 0.6). Additive blending is essential. Particles must have a 'Glow' radius."
+        }
+    }
+}

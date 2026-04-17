@@ -4,14 +4,14 @@
 /// Handles: particle position updates, 10s seamless loop, preset-specific physics
 pub const COMPUTE_SHADER: &str = r#"
 // Lumina-RS Compute Shader
-// Particle physics simulation with 7 presets
+// Particle physics simulation with 6 presets
 
 struct SimParams {
     delta_time: f32,
     time: f32,           // 0-10s loop time
     width: f32,
     height: f32,
-    preset: u32,          // 0=Normal, 1=Rain, 2=Snow, 3=Fireflies, 4=SunDust, 5=Embers, 6=Petals
+    preset: u32,          // 0=CosmicDust, 1=Rain, 2=Snow, 3=Fireflies, 4=SunDust, 5=Embers
     density: f32,
     velocity_min: f32,
     velocity_max: f32,
@@ -502,18 +502,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3u) {
             if (p.position.x < 0.0) { p.position.x = params.width - 10.0; }
             if (p.position.x > params.width) { p.position.x = 10.0; }
         }
-        case 6u: { // Petals
-            let fall_speed = mix(params.velocity_min, params.velocity_max, p.seed.x) * 8.0;
-            p.velocity.y = fall_speed;
-            p.velocity.x = sin(p.phase * 2.0 + params.time * 3.0) * params.sway_intensity * 15.0;
-            p.position.x = p.position.x + p.velocity.x * params.delta_time;
-            p.position.y = p.position.y + p.velocity.y * params.delta_time;
-            p.phase = p.phase + params.delta_time;
-            if (p.position.y > params.height) {
-                p.position.y = -20.0;
-                p.position.x = hash(p.seed + vec2f(params.time, 0.0)) * params.width;
-            }
-        }
         default: {
             p.velocity.y = p.velocity.y - 0.1 * params.delta_time;
             p.position.x = p.position.x + p.velocity.x * params.delta_time;
@@ -605,6 +593,17 @@ fn bokeh_blur(depth: f32, base_size: f32) -> f32 {
     return base_size * (1.0 + depth * 3.0);
 }
 
+// Cosine hue function - converts hue angle (degrees) to RGB color
+// Creates smooth rainbow spectrum using cosine palette
+fn cos_hue(hue: f32) -> vec3f {
+    let h = hue * 3.14159 / 180.0; // Convert to radians
+    return vec3f(
+        cos(h) * 0.5 + 0.5,
+        cos(h + 2.094) * 0.5 + 0.5,  // 120 degrees offset
+        cos(h + 4.189) * 0.5 + 0.5   // 240 degrees offset
+    );
+}
+
 @fragment
 fn fs_main(input: VertexOutput) -> @location(0) vec4f {
     let uv = input.uv;
@@ -645,22 +644,42 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
         var sdf_dist: f32;
         switch (params.preset) {
             case 0u: {
-                // Cosmic Dust - More particles, smaller, vibrant colors
+                // Cosmic Dust - DIVERSE vibrant colors with rainbow spectrum
                 let cosmic_size = size * 0.15; // Much smaller
                 
-                // Get background color at particle position
+                // Get background color at particle position for contextual coloring
                 let particle_uv = pos / vec2f(params.width, params.height);
                 let bg_at_pos = textureSample(background, tex_sampler, particle_uv).rgb;
                 
-                // Vibrant color blend - more saturated
-                let color_seed = p.seed.x;
-                let base_vib = params.base_color.rgb * 1.5; // Boost base
-                let sec_vib = vec3f(params.base_color.b * 1.4, params.base_color.g * 1.2, params.base_color.r * 1.3); // Vibrant secondary
+                // DIVERSE rainbow color spectrum based on seed and time
+                // Maps seed to full hue wheel (0-360 degrees)
+                let hue1 = p.seed.x * 360.0;                    // Primary hue (0-360)
+                let hue2 = p.seed.y * 360.0 + 60.0;              // Secondary hue (shifted)
+                let hue3 = (p.seed.x + p.seed.y) * 180.0;       // Tertiary hue
                 
-                // Strong color blend
-                let cosmic_color = mix(base_vib, sec_vib, color_seed);
+                // Convert hues to RGB using cosine palette
+                let hue_shift = params.time * 10.0; // Slowly rotate colors over time
+                let c1 = cos_hue(hue1 + hue_shift);
+                let c2 = cos_hue(hue2 + hue_shift + 120.0);
+                let c3 = cos_hue(hue3 + hue_shift + 240.0);
                 
-                // Tiny bright core + soft glow
+                // Create 3-color palette from cosmic spectrum
+                let color_a = c1; // Cyan-blue spectrum
+                let color_b = c2; // Purple-pink spectrum  
+                let color_c = c3; // Gold-orange spectrum
+                
+                // Mix 3 colors based on position and seed for maximum diversity
+                let mix_factor1 = p.seed.x;
+                let mix_factor2 = p.seed.y * 0.5 + 0.25;
+                let cosmic_color = mix(mix(color_a, color_b, mix_factor1), color_c, mix_factor2);
+                
+                // Blend with background for contextual feel (subtle, 30%)
+                let bg_blend = cosmic_color * 0.7 + bg_at_pos * 0.3;
+                
+                // Also blend with base_color for preset identity (20%)
+                let cosmic_final = mix(bg_blend, params.base_color.rgb, 0.2);
+                
+                // Tiny bright core + soft glow with rainbow
                 let glow_size = cosmic_size * 5.0;
                 let glow_sdf = sdf_circle(screen_pos, pos, glow_size);
                 let glow_alpha = smoothstep(glow_size, 0.0, glow_sdf) * 0.25;
@@ -747,10 +766,6 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
             case 5u: { // Embers - bright at bottom, fade as rising
                 // Small intense spark core
                 sdf_dist = sdf_circle(screen_pos, pos, size * 0.8);
-            }
-            case 6u: {
-                let rotation = p.phase + params.time * 0.5;
-                sdf_dist = sdf_ellipse(screen_pos, pos, vec2f(size, size * 0.6), rotation);
             }
             default: {
                 sdf_dist = sdf_circle(screen_pos, pos, size);

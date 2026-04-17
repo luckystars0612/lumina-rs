@@ -6,36 +6,30 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Preset {
-    Normal,
+    CosmicDust,
     Rain,
     Snow,
     Fireflies,
     SunDust,
     Embers,
-    Petals,
-    Bubbles,
-    CosmicDust,
 }
 
 impl Default for Preset {
     fn default() -> Self {
-        Self::Normal
+        Self::CosmicDust
     }
 }
 
 impl Preset {
-    /// Convert to shader index (0-6)
+    /// Convert to shader index (0-5)
     pub fn to_shader_index(&self) -> u32 {
         match self {
-            Preset::Normal => 0,
+            Preset::CosmicDust => 0,
             Preset::Rain => 1,
             Preset::Snow => 2,
             Preset::Fireflies => 3,
             Preset::SunDust => 4,
             Preset::Embers => 5,
-            Preset::Petals => 6,
-            Preset::Bubbles => 0, // fallback
-            Preset::CosmicDust => 0, // Uses same shader as Normal
         }
     }
 }

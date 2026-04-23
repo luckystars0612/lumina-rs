@@ -130,9 +130,16 @@ pub struct OverlayParams {
     pub splash_enabled: bool,
     #[serde(default)]
     pub splash_velocity: f32,
-    // Snow/Embers-specific
+    // Snow-specific
     #[serde(default)]
     pub sway_intensity: f32,
+    #[serde(default)]
+    pub fall_speed_mult: f32,
+    #[serde(default)]
+    pub fall_direction: f32,
+    // Fireflies-specific
+    #[serde(default)]
+    pub visibility_ratio: u32,
 }
 
 // Default values

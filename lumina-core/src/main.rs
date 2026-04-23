@@ -558,6 +558,9 @@ pub async fn render_loop(
         size_max: params.size_range[1],
         sway_intensity: params.sway_intensity,
         buoyancy_force: 0.0,
+        fall_speed_mult: params.fall_speed_mult,
+        fall_direction: params.fall_direction,
+        visibility_ratio: params.visibility_ratio as f32,
         _pad0: 0.0,
         _pad1: 0.0,
         base_color: hex_to_rgba(&params.base_color_hex),
@@ -582,14 +585,9 @@ pub async fn render_loop(
         height: height as f32,
         preset: config.preset.to_shader_index(),
         flicker_speed: params.flicker_speed,
-        _pad0: 0.0,
-        _pad1: 0.0,
-        _pad2: 0.0,
+        visibility_ratio: params.visibility_ratio as f32,
+        padding: [0.0, 0.0],
         base_color: hex_to_rgba(&params.base_color_hex),
-        _pad3: 0.0,
-        _pad4: 0.0,
-        _pad5: 0.0,
-        _pad6: 0.0,
     };
 
     // Create FFmpeg encoder

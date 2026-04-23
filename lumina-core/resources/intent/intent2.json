@@ -9,7 +9,7 @@
             ],
             "base_color_hex": "#ffeedd",
             "turbulence": 0.15,
-            "flicker_speed": 0.9,
+            "flicker_speed": 0.5,
             "size_range": [
                 3.0,
                 5.0
@@ -20,7 +20,7 @@
             "height": 1080,
             "fps": 60,
             "duration_secs": 10,
-            "particle_count": 300
+            "particle_count": 5000
         }
     }
 }

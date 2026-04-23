@@ -21,7 +21,11 @@ struct SimParams {
     size_max: f32,
     sway_intensity: f32,
     buoyancy_force: f32,
-    base_color: vec4f,
+    // Snow-specific params
+    fall_speed_mult: f32,
+    fall_direction: f32,
+    // Fireflies-specific
+    visibility_ratio: f32,
     // Rain-specific params
     wind_direction: f32,   // degrees: 0=down, 90=right
     wind_strength: f32,     // 0.0-2.0
@@ -250,22 +254,29 @@ fn main(@builtin(global_invocation_id) global_id: vec3u) {
             // Update phase for animation
             p.phase = params.time + p.seed.y * 6.28;
         }
-        case 2u: { // Snow - Enhanced with horizontal drift and depth-based opacity
-            // Slow falling speed
-            let fall_speed = mix(params.velocity_min, params.velocity_max, p.seed.x) * 3.0;
+        case 2u: { // Snow - Configurable speed and direction
+            // Speed multiplier from config (default 3.0 for compatibility)
+            let speed_mult = params.fall_speed_mult;
             
-            // Horizontal sine-wave drift (drift, not straight fall)
-            // Each particle has unique drift based on seed and phase
+            // Fall direction in degrees (0 = down, 90 = right, 180 = up, 270 = left)
+            let fall_dir_rad = params.fall_direction * 3.14159 / 180.0;
+            let dir_x = sin(fall_dir_rad);
+            let dir_y = cos(fall_dir_rad);
+            
+            // Base fall speed from velocity_scale
+            let base_speed = mix(params.velocity_min, params.velocity_max, p.seed.x) * speed_mult * 60.0;
+            
+            // Horizontal sine-wave drift
             let drift_phase = p.seed.x * 6.28 + params.time * 0.5;
-            let drift_amplitude = params.sway_intensity * 15.0; // Horizontal sway range
+            let drift_amplitude = params.sway_intensity * 15.0;
             let drift_x = sin(drift_phase) * drift_amplitude;
             
-            // Add wind influence using turbulence
+            // Wind influence using turbulence
             let wind_offset = sin(params.time * 0.3 + p.seed.y * 6.28) * params.turbulence * 8.0;
             
-            // Combine horizontal movement
-            p.velocity.x = (drift_x + wind_offset) * 0.1;
-            p.velocity.y = fall_speed;
+            // Combine velocity with fall_direction
+            p.velocity.x = (dir_x * base_speed + drift_x + wind_offset) * 0.1;
+            p.velocity.y = dir_y * base_speed;
             
             // Apply movement
             p.position.x = p.position.x + p.velocity.x * params.delta_time;
@@ -533,8 +544,9 @@ struct RenderParams {
     height: f32,
     preset: u32,
     flicker_speed: f32,
-    base_color: vec4f,
+    visibility_ratio: f32,
     padding: vec2f,
+    base_color: vec4f,
 }
 
 @group(0) @binding(0) var<uniform> params: RenderParams;
@@ -619,8 +631,8 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
     let is_fireflies = params.preset == 3u;
     
     for (var i = 0u; i < particle_count; i = i + 1u) {
-        // For fireflies, only show 1 in 100 particles = ~50 visible
-        if (is_fireflies && (i % 100u != 0u)) {
+        // For fireflies, use visibility_ratio from config (default: 1 in 10 visible)
+        if (is_fireflies && (i % u32(params.visibility_ratio) != 0u)) {
             continue;
         }
         
@@ -816,6 +828,11 @@ pub struct SimParams {
     pub size_max: f32,
     pub sway_intensity: f32,
     pub buoyancy_force: f32,
+    // Snow-specific params
+    pub fall_speed_mult: f32,
+    pub fall_direction: f32,
+    // Fireflies-specific
+    pub visibility_ratio: f32,
     pub _pad0: f32,  // padding for vec4 alignment
     pub _pad1: f32,
     pub base_color: [f32; 4],
@@ -842,14 +859,9 @@ pub struct RenderParams {
     pub height: f32,
     pub preset: u32,
     pub flicker_speed: f32,
-    pub _pad0: f32,  // padding for vec4 alignment
-    pub _pad1: f32,
-    pub _pad2: f32,
+    pub visibility_ratio: f32,
+    pub padding: [f32; 2],
     pub base_color: [f32; 4],
-    pub _pad3: f32,  // padding to make total size 64 bytes
-    pub _pad4: f32,
-    pub _pad5: f32,
-    pub _pad6: f32,
 }
 
 impl Default for SimParams {
@@ -869,6 +881,11 @@ impl Default for SimParams {
             size_max: 6.0,
             sway_intensity: 0.5,
             buoyancy_force: 0.0,
+            // Snow-specific defaults
+            fall_speed_mult: 3.0,
+            fall_direction: 0.0,
+            // Fireflies-specific defaults
+            visibility_ratio: 10.0,
             _pad0: 0.0,
             _pad1: 0.0,
             base_color: [1.0, 1.0, 1.0, 1.0],
@@ -896,14 +913,9 @@ impl Default for RenderParams {
             height: 1080.0,
             preset: 0,
             flicker_speed: 1.0,
-            _pad0: 0.0,
-            _pad1: 0.0,
-            _pad2: 0.0,
+            visibility_ratio: 10.0,
+            padding: [0.0, 0.0],
             base_color: [1.0, 1.0, 1.0, 1.0],
-            _pad3: 0.0,
-            _pad4: 0.0,
-            _pad5: 0.0,
-            _pad6: 0.0,
         }
     }
 }

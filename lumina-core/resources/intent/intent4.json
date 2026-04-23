@@ -9,19 +9,21 @@
             ],
             "base_color_hex": "#e8f4ff",
             "turbulence": 0.3,
-            "flicker_speed": 1.5,
+            "flicker_speed": 0.0,
             "size_range": [
                 0.5,
                 1.5
             ],
-            "sway_intensity": 2.0
+            "sway_intensity": 1.2,
+            "fall_speed_mult": 1.0,
+            "fall_direction": 45
         },
         "render": {
             "width": 1920,
             "height": 1080,
             "fps": 60,
             "duration_secs": 10,
-            "particle_count": 1000
+            "particle_count": 5000
         }
     }
 }

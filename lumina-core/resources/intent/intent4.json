@@ -8,16 +8,20 @@
                 1.2
             ],
             "base_color_hex": "#e8f4ff",
-            "opacity": 0.6,
             "turbulence": 0.3,
-            "flicker_speed": 0.0,
+            "flicker_speed": 1.5,
             "size_range": [
                 0.5,
                 1.5
             ],
-            "sway_intensity": 1.2,
-            "softness": 0.4,
-            "director_note": "Snowflakes: small (0.5-1.5px), soft crystalline look, gentle sine-wave sway. turbulence=0.3 for slightly chaotic drift. Low opacity 0.6 with softness 0.4 for inner glow effect. White with slight blue tint."
+            "sway_intensity": 2.0
+        },
+        "render": {
+            "width": 1920,
+            "height": 1080,
+            "fps": 60,
+            "duration_secs": 10,
+            "particle_count": 1000
         }
     }
 }

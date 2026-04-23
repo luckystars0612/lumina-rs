@@ -486,17 +486,28 @@ struct Particle {
     phase: f32,          // animation phase
 }
 
-/// Render a 10-second loop video
+/// Render a loop video with configurable parameters
 pub async fn render_loop(
     background_path: &Path,
     config: &OverlayConfig,
     output_path: &str,
 ) -> Result<()> {
-    let width = 1920u32;
-    let height = 1080u32;
-    let fps = 60u32;
-    let total_frames = 600u32; // 10 seconds @ 60fps
-    let particle_count = 5_000usize; // Further reduced for cleaner visuals
+    // Get render config from config or use defaults
+    let render_cfg = config.render.as_ref().map(|r| {
+        let mut r = r.clone();
+        r.validate();
+        r
+    }).unwrap_or_default();
+    
+    let width = render_cfg.width;
+    let height = render_cfg.height;
+    let fps = render_cfg.fps;
+    let duration_secs = render_cfg.duration_secs;
+    let particle_count = render_cfg.particle_count as usize;
+    let total_frames = fps * duration_secs;
+
+    println!("Render config: {}x{} @ {}fps, {} particles, {}s duration",
+             width, height, fps, particle_count, duration_secs);
 
     // Load background image
     let background = image::open(background_path)?;
@@ -505,7 +516,7 @@ pub async fn render_loop(
     // Create luminance mask
     let (mask, _) = analysis::load_and_analyze(background_path)?;
     
-    // Resize luminance mask to match fixed GPU dimensions (1920x1080)
+    // Resize luminance mask to match target dimensions
     let mask = image::imageops::resize(
         &mask,
         width,
@@ -516,7 +527,7 @@ pub async fn render_loop(
     // Create engine
     let engine = LuminaEngine::new(width, height, particle_count).await?;
 
-    // Upload textures (mask is now resized to 1920x1080)
+    // Upload textures
     engine.update_luminance_mask(&mask)?;
     engine.update_background(&background)?;
 
@@ -545,7 +556,7 @@ pub async fn render_loop(
         flicker_speed: params.flicker_speed,
         size_min: params.size_range[0],
         size_max: params.size_range[1],
-        sway_intensity: 0.5,
+        sway_intensity: params.sway_intensity,
         buoyancy_force: 0.0,
         _pad0: 0.0,
         _pad1: 0.0,

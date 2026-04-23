@@ -9,12 +9,18 @@
             ],
             "base_color_hex": "#ffeedd",
             "turbulence": 0.15,
-            "flicker_speed": 0.5,
+            "flicker_speed": 0.9,
             "size_range": [
                 3.0,
                 5.0
-            ],
-            "interaction_logic": "Very sparse sun dust - only a few delicate floating particles. Particles should be barely visible, like dust catching light. Do not overwhelm the background."
+            ]
+        },
+        "render": {
+            "width": 1920,
+            "height": 1080,
+            "fps": 60,
+            "duration_secs": 10,
+            "particle_count": 300
         }
     }
 }

@@ -14,8 +14,14 @@
                 1.0,
                 2.5
             ],
-            "sway_intensity": 0.8,
-            "interaction_logic": "Ember sparks burst up from bottom like throwing rock into fire. Fast initial burst, then drift with wind. Particles glow orange, small and spark-like. Lifecycle: burst up -> slow drift -> fade out."
+            "sway_intensity": 0.8
+        },
+        "render": {
+            "width": 1920,
+            "height": 1080,
+            "fps": 60,
+            "duration_secs": 10,
+            "particle_count": 5000
         }
     }
 }

@@ -6,6 +6,71 @@ Lumina-RS provides **6 particle presets** with distinct physics and rendering. A
 
 ---
 
+## Render Configuration
+
+### New: Dynamic Parameters
+
+You can now customize render settings via the `render` section in your intent JSON:
+
+```json
+{
+    "overlay_config": {
+        "preset": "rain",
+        "params": {
+            "density_multiplier": 0.2,
+            "velocity_scale": [8.0, 12.0],
+            "base_color_hex": "#aaccff"
+        },
+        "render": {
+            "width": 1080,
+            "height": 1920,
+            "fps": 60,
+            "duration_secs": 10,
+            "particle_count": 2000
+        }
+    }
+}
+```
+
+| Parameter | Type | Default | Range | Description |
+|-----------|------|---------|-------|-------------|
+| `width` | u32 | 1920 | 360-3840 | Output width in pixels |
+| `height` | u32 | 1080 | 360-2160 | Output height in pixels |
+| `fps` | u32 | 60 | 24-120 | Frames per second |
+| `duration_secs` | u32 | 10 | 1-60 | Video duration in seconds |
+| `particle_count` | u32 | 5000 | 100-5000 | Number of particles (min 100, max 5000) |
+
+### Recommended Presets by Use Case
+
+**YouTube Shorts (9:16 portrait)**:
+```json
+"render": {
+    "width": 1080,
+    "height": 1920,
+    "particle_count": 2000
+}
+```
+
+**YouTube Videos (16:9 landscape)**:
+```json
+"render": {
+    "width": 1920,
+    "height": 1080,
+    "particle_count": 4000
+}
+```
+
+**Thumbnail/Preview**:
+```json
+"render": {
+    "width": 540,
+    "height": 960,
+    "particle_count": 500
+}
+```
+
+---
+
 ## Preset Index Mapping
 
 | Index | Preset Name | File |
@@ -13,7 +78,7 @@ Lumina-RS provides **6 particle presets** with distinct physics and rendering. A
 | 0 | CosmicDust | intent6.json |
 | 1 | Rain | intent1.json |
 | 2 | Snow | intent4.json |
-| 3 | Fireflies | - |
+| 3 | Fireflies | intent5.json |
 | 4 | SunDust | intent2.json |
 | 5 | Embers | intent3.json |
 
@@ -81,6 +146,11 @@ Tiny particles with vibrant rainbow spectrum colors, drifting in customizable wi
             "size_range": [0.5, 1.5],
             "wind_direction": 180,
             "wind_strength": 1.0
+        },
+        "render": {
+            "width": 1080,
+            "height": 1920,
+            "particle_count": 2500
         }
     }
 }
@@ -177,8 +247,8 @@ Soft particles falling slowly with horizontal drift and depth-based bokeh. Ideal
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `sway_intensity` | f32 | 0.5 | Horizontal sway amplitude |
-
-**Note**: `opacity` and `softness` parameters in JSON are currently not implemented (uses hardcoded values).
+| `fall_speed_mult` | f32 | 3.0 | Fall speed multiplier (1.0 = slow, 5.0 = fast) |
+| `fall_direction` | f32 | 0.0 | Fall direction in degrees (0=down, 90=right, 180=up, 270=left) |
 
 ### Example JSON
 ```json
@@ -192,7 +262,9 @@ Soft particles falling slowly with horizontal drift and depth-based bokeh. Ideal
             "turbulence": 0.3,
             "flicker_speed": 0.0,
             "size_range": [0.5, 1.5],
-            "sway_intensity": 1.2
+            "sway_intensity": 1.2,
+            "fall_speed_mult": 1.0,
+            "fall_direction": 0
         }
     }
 }
@@ -209,7 +281,7 @@ Small particles freely flying with curl noise and bobbing motion, attracted towa
 - **Motion**: Organic flying pattern with curl noise
 - **Bobbing**: Vertical movement in sine wave
 - **Light Attraction**: Flies toward bright areas (luminance gradient)
-- **Visibility**: Only 1% of particles visible at any time (~50 visible)
+- **Visibility**: Configurable via `visibility_ratio` (default: 1 in 10 particles visible)
 
 ### Rendering
 - **Size**: Small, variable (3-11 pixels)
@@ -218,7 +290,10 @@ Small particles freely flying with curl noise and bobbing motion, attracted towa
 - **Dark Areas**: Fireflies brighter in dark regions
 
 ### Specific Parameters
-Uses only common parameters.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `visibility_ratio` | u32 | 10 | Show 1 in N particles (3 = 33% visible, 10 = 10% visible, 100 = 1% visible) |
 
 ### Example JSON
 ```json
@@ -231,7 +306,8 @@ Uses only common parameters.
             "base_color_hex": "#ffd700",
             "turbulence": 0.3,
             "flicker_speed": 2.0,
-            "size_range": [2.0, 5.0]
+            "size_range": [2.0, 5.0],
+            "visibility_ratio": 3
         }
     }
 }
@@ -384,10 +460,13 @@ cargo build --release
 ### Snow
 - Lower `velocity_scale` for slow, romantic snowfall
 - Increase `sway_intensity` for more horizontal drift
+- Use `fall_speed_mult: 1.0` for slower snow, `5.0` for faster
+- Use `fall_direction: 0` for straight down, adjust angle for wind-blown snow
 - Use light gray (`#e8f4f8`) for natural snow
 
 ### Fireflies
-- Increase `density_multiplier` since only 1% is visible
+- Use `visibility_ratio: 10` for few visible (default), `3` for many visible
+- Increase `density_multiplier` since only ~10% are visible by default
 - Higher `flicker_speed` for lively animation
 - Test on dark backgrounds for best visibility
 
@@ -410,3 +489,45 @@ The following parameters exist in some intent JSONs but are NOT currently implem
 - `softness` (Snow) - uses hardcoded 0.4
 - `secondary_color_hex` (CosmicDust) - not used
 - `interaction_logic` / `director_note` - comments only, not parsed
+
+---
+
+## JSON Format Examples
+
+### Nested Format (Recommended)
+```json
+{
+    "overlay_config": {
+        "preset": "rain",
+        "params": {
+            "density_multiplier": 0.2,
+            "velocity_scale": [8.0, 12.0],
+            "base_color_hex": "#aaccff",
+            "wind_direction": 35.0,
+            "wind_strength": 1.8
+        },
+        "render": {
+            "width": 1080,
+            "height": 1920,
+            "fps": 60,
+            "duration_secs": 10,
+            "particle_count": 2000
+        }
+    }
+}
+```
+
+### Flat Format (Legacy)
+```json
+{
+    "preset": "snow",
+    "params": {
+        "density_multiplier": 1.5,
+        "velocity_scale": [0.5, 1.2],
+        "base_color_hex": "#e8f4ff",
+        "sway_intensity": 1.2
+    }
+}
+```
+
+**Note**: Flat format uses default render settings (1920x1080, 60fps, 5000 particles).
